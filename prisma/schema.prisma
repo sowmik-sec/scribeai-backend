@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  extensions        = [vector]
+}
+
+enum MeetingStatus {
+  PENDING
+  UPLOADING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String?
+  password  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  meetings  Meeting[]
+  usage     UserUsage?
+
+  @@map("users")
+}
+
+model Meeting {
+  id          String         @id @default(uuid())
+  title       String
+  status      MeetingStatus  @default(PENDING)
+  audioUrl    String?
+  fileName    String?
+  transcript  String?        @db.Text
+  summary     String?        @db.Text
+  actionItems Json?          @db.Json
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // chunks Me
+  chunks      MeetingChunk[]
+}
+
+model MeetingChunk {
+  id        String                       @id @default(uuid())
+  content   String                       @db.Text
+  createdAt DateTime                     @default(now())
+  // I have to change the vector embedding number to model specific dimension number
+  embedding Unsupported("vector(1536)")?
+  meetingId String
+  meeting   Meeting                      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model UserUsage {
+  id                String   @id @default(uuid())
+  meetingsProcessed Int      @default(0)
+  lastResetDate     DateTime @default(now())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
