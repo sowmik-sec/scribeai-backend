@@ -1,22 +1,26 @@
 import { Request } from "express";
 import { User } from "../../../generated/prisma";
-import { IFile } from "../../../interfaces/file";
+import { IUploadFile } from "../../../interfaces/file";
 import bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
+import { FileUploadHelper } from "../../../helpers/fileUploadHelper";
+import { hashedPassword } from "./user.utils";
 
-const createUser = async (req: Request & { file?: IFile }): Promise<User> => {
-  const file = req.file as IFile;
+const createUser = async (
+  req: Request & { file?: IUploadFile }
+): Promise<User> => {
+  const file = req.file as IUploadFile;
   if (file) {
-    // Handle file upload
+    req.body.profilePhoto = (
+      await FileUploadHelper.uploadToCloudinary(file)
+    )?.secure_url;
   }
-  const hashedPassword: string = await bcrypt.hash(req.body.password, 12);
-  const userData = {
-    email: req.body.email,
-    name: req.body.name,
-    password: hashedPassword,
-  };
+  const hashPassword: string = await hashedPassword(req.body.password);
   const result = await prisma.user.create({
-    data: userData,
+    data: {
+      ...req.body,
+      password: hashPassword,
+    },
   });
   return result;
 };
