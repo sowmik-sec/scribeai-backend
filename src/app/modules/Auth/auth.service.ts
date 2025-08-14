@@ -7,6 +7,7 @@ import { jwtHelpers } from "../../../helpers/jwtHelpers";
 import config from "../../../config";
 import { Secret } from "jsonwebtoken";
 import type { StringValue } from "ms";
+import { Request } from "express";
 
 const loginUser = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
   const { email, password } = payload;
@@ -41,6 +42,25 @@ const loginUser = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
   };
 };
 
+const getUserData = async (req: Request) => {
+  const userId = req.user?.userId;
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      profilePhoto: true,
+      meetings: true,
+      usage: true,
+    },
+  });
+  return user;
+};
+
 export const AuthServices = {
   loginUser,
+  getUserData,
 };

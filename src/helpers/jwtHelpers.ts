@@ -1,5 +1,4 @@
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
-import config from "../config";
 import type { StringValue } from "ms";
 
 const createToken = (
