@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { User } from "../../../generated/prisma";
-import { IFile } from "../../interfaces/file";
+import { IFile } from "../../../interfaces/file";
 import bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
 
