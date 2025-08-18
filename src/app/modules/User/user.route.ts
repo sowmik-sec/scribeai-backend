@@ -1,18 +1,13 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { UserControllers } from "./user.controller";
-import { FileUploadHelper } from "../../../helpers/fileUploadHelper";
 import { UserValidation } from "./user.validation";
+import validateRequest from "../../middlewares/validateRequest";
 const router = express.Router();
 
 router.post(
   "/create-user",
-  FileUploadHelper.upload.single("file"),
-  (req: Request, res: Response, next: NextFunction) => {
-    req.body = UserValidation.createUserValidationSchema.parse(
-      JSON.parse(req.body.data)
-    );
-    return UserControllers.createUser(req, res, next);
-  }
+  validateRequest(UserValidation.createUserValidationSchema),
+  UserControllers.createUser
 );
 
 export const UserRoutes = router;

@@ -8,12 +8,6 @@ import { User } from "../../../../generated/prisma";
 const createUser = async (
   req: Request & { file?: IUploadFile }
 ): Promise<Partial<User>> => {
-  const file = req.file as IUploadFile;
-  if (file) {
-    req.body.profilePhoto = (
-      await FileUploadHelper.uploadToCloudinary(file)
-    )?.secure_url;
-  }
   const hashPassword: string = await hashedPassword(req.body.password);
   const result = await prisma.user.create({
     data: {
@@ -24,7 +18,6 @@ const createUser = async (
       id: true,
       email: true,
       name: true,
-      profilePhoto: true,
       createdAt: true,
     },
   });
