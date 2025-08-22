@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
@@ -27,8 +27,13 @@ const uploadToCloudinary = async (
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload(
       file.path,
-      (error: Error, result: ICloudinaryResponse) => {
-        fs.unlinkSync(file.path);
+      { resource_type: "auto" },
+      (error: any, result: any) => {
+        try {
+          fs.unlinkSync(file.path);
+        } catch (unlinkError) {
+          // Ignore unlink errors
+        }
         if (error) {
           reject(error);
         } else {
