@@ -29,15 +29,15 @@ const uploadToCloudinary = async (
       file.path,
       { resource_type: "auto" },
       (error: any, result: any) => {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (unlinkError) {
-          // Ignore unlink errors
-        }
         if (error) {
           reject(error);
         } else {
           resolve(result);
+          fs.unlink(file.path, (err) => {
+            if (err) {
+              console.log(err);
+            }
+          });
         }
       }
     );
