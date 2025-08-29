@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { FileUploadHelper } from "../../../helpers/fileUploadHelper";
 import { IUploadFile } from "../../../interfaces/file";
-import { MeetingStatus } from "../../../../generated/prisma";
+import { Meeting, MeetingStatus, User } from "../../../../generated/prisma";
 import ApiError from "../../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../../../shared/prisma";
@@ -26,6 +26,19 @@ const createMeetingIntoDB = async (req: Request) => {
   return result;
 };
 
+const getMeetingsFromDb = async (user: User): Promise<Meeting[]> => {
+  const meetings = await prisma.meeting.findMany({
+    where: {
+      userId: user.id,
+    },
+  });
+  if (!meetings) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Meetings not found");
+  }
+  return meetings;
+};
+
 export const MeetingServices = {
   createMeetingIntoDB,
+  getMeetingsFromDb,
 };

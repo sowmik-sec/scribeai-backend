@@ -17,4 +17,6 @@ router.post(
   }
 );
 
+router.get("/", auth(), MeetingControllers.getMeetings);
+
 export const MeetingRoutes = router;
